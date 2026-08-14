@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+version = project.version
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+repositories {
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
+    maven { url = uri("https://jitpack.io") } // VaultAPI
+    mavenCentral()
+}
+
+dependencies {
+    // Paper API (1.21.4)
+    compileOnly "io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT"
+
+    // Vault (economy) — 런타임엔 서버의 Vault 플러그인이 제공
+    // VaultAPI 가 끌고 오는 낡은 org.bukkit:bukkit 1.13.1 을 제외해야 paper-api 와 충돌 안 남
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+        exclude group: "org.bukkit", module: "bukkit"
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// 셰이딩할 의존성이 없으므로 plain jar 가 곧 배포 파일입니다.
+//   ./gradlew build  →  build/libs/SimpleShop-1.0.0.jar

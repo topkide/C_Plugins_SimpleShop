@@ -1,0 +1,23 @@
+name: SimpleShop
+version: '1.0.0'
+main: com.dotorimaru.simpleshop.SimpleShopPlugin
+api-version: '1.21'
+author: 땃쥐
+description: 단일 서버용 GUI 상점 (드래그 앤 드롭 편집, Vault 연동)
+depend: [Vault]
+commands:
+  상점:
+    description: 상점 열기
+    usage: /상점
+    aliases: [shop, 샵]
+  상점관리:
+    description: 상점 관리 (설정 / 페이지 / 리로드)
+    usage: /상점관리 [설정 | 페이지 <번호> | 리로드]
+    aliases: [shopadmin]
+permissions:
+  simpleshop.use:
+    description: 상점 이용
+    default: true
+  simpleshop.admin:
+    description: 상점 관리
+    default: op
