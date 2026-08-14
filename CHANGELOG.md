@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.1
+
+버그 수정 릴리스.
+
+- **컴파일 오류 수정**: `ItemEditorMenu`의 가격 입력 시 인벤토리를 닫는 코드(`runTask(plugin, p::closeInventory)`)가
+  Paper 1.21.4 API 에서 모호한 메서드 참조로 컴파일에 실패하던 문제를 람다(`() -> p.closeInventory()`)로 교체하여 수정.
+  (`closeInventory()` 오버로드 때문에 `runTask(Plugin, Runnable)` / `runTask(Plugin, Consumer<BukkitTask>)` 중
+  어느 쪽인지 컴파일러가 결정하지 못하던 문제)
+- 기능 변화는 없습니다.
+
 ## v1.0.0
 
 최초 릴리스.

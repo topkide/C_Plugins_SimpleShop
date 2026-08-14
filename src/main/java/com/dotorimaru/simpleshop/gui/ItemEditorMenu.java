@@ -49,7 +49,7 @@ public class ItemEditorMenu extends Menu {
     private void promptPrice(Player p, boolean buy) {
         switching = true; // ESC 복귀 처리 생략 (의도적 닫기)
         // InventoryClickEvent 핸들러 안에서 closeInventory 직접 호출은 금지 -> 다음 틱으로
-        plugin.getServer().getScheduler().runTask(plugin, p::closeInventory);
+        plugin.getServer().getScheduler().runTask(plugin, () -> p.closeInventory());
         p.sendMessage(Text.c(plugin.msg(buy ? "input-buy-price" : "input-sell-price")));
 
         plugin.input().await(p, in -> {
