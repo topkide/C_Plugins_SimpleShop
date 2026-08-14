@@ -1,0 +1,76 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew build --no-daemon --stacktrace
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep '^version' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          ls -l build/libs
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpleShop-${{ steps.version.outputs.version }}
+          path: build/libs/SimpleShop-${{ steps.version.outputs.version }}.jar
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION='${{ steps.version.outputs.version }}'
+          if [ -f CHANGELOG.md ]; then
+            awk -v ver="$VERSION" '
+              $0 ~ "^## v?"ver { found=1; next }
+              found && /^## / { exit }
+              found { print }
+            ' CHANGELOG.md > release-notes.md
+          fi
+          if [ ! -s release-notes.md ]; then
+            echo "SimpleShop v$VERSION" > release-notes.md
+          fi
+          cat release-notes.md
+
+      - name: Create / update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION='${{ steps.version.outputs.version }}'
+          TAG="v$VERSION"
+          JAR="build/libs/SimpleShop-$VERSION.jar"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "SimpleShop $TAG" --notes-file release-notes.md
+          else
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "SimpleShop $TAG" --notes-file release-notes.md
+          fi
+          gh release upload "$TAG" "$JAR" --repo "$GITHUB_REPOSITORY" --clobber
